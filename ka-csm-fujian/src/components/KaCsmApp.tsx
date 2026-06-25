@@ -24,6 +24,17 @@ async function readApiMessage(response: Response) {
   return data.message || "请求失败。";
 }
 
+async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
 function toSessionUser(user: AppData["user"]): SessionUser {
   return {
     ...user,
@@ -67,7 +78,7 @@ export function KaCsmApp() {
     setAppError("");
 
     try {
-      const response = await fetch("/api/app-data");
+      const response = await fetchWithTimeout("/api/app-data");
       if (!response.ok) throw new Error(await readApiMessage(response));
 
       const data = (await response.json()) as AppData;
@@ -85,7 +96,7 @@ export function KaCsmApp() {
 
     async function init() {
       try {
-        const response = await fetch("/api/session/me");
+        const response = await fetchWithTimeout("/api/session/me");
         if (response.ok && !cancelled) {
           await loadAppData();
         }
@@ -104,7 +115,7 @@ export function KaCsmApp() {
     setLoginError("");
     setAppError("");
 
-    const response = await fetch("/api/session/login", {
+    const response = await fetchWithTimeout("/api/session/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -123,7 +134,7 @@ export function KaCsmApp() {
   };
 
   const handleLogout = async () => {
-    await fetch("/api/session/logout", { method: "POST" });
+    await fetchWithTimeout("/api/session/logout", { method: "POST" });
     setAppData(null);
     setActiveTab(defaultTab);
     setCustomerSubTab("客户清单");

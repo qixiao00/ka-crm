@@ -218,7 +218,7 @@ export function setSessionCookie(response: NextResponse, userId: number) {
   response.cookies.set(SESSION_COOKIE, createSessionToken(userId), {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.AUTH_COOKIE_SECURE === "true",
     path: "/",
     maxAge: 60 * 60 * 8,
   });
@@ -228,7 +228,7 @@ export function clearSessionCookie(response: NextResponse) {
   response.cookies.set(SESSION_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.AUTH_COOKIE_SECURE === "true",
     path: "/",
     maxAge: 0,
   });
