@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       user: publicUser(user),
       source: hasDatabaseConfig() ? "database" : "static",
     });
-    setSessionCookie(response, user.id);
+    setSessionCookie(response, user.id, request);
     return response;
   } catch (error) {
     return NextResponse.json(

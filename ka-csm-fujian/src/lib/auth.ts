@@ -214,21 +214,31 @@ export async function getCurrentUser() {
   return user;
 }
 
-export function setSessionCookie(response: NextResponse, userId: number) {
+function shouldUseSecureCookie(request?: Request) {
+  if (process.env.AUTH_COOKIE_SECURE !== "true") return false;
+  if (!request) return true;
+
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const protocol = forwardedProto || new URL(request.url).protocol.replace(":", "");
+
+  return protocol === "https";
+}
+
+export function setSessionCookie(response: NextResponse, userId: number, request?: Request) {
   response.cookies.set(SESSION_COOKIE, createSessionToken(userId), {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.AUTH_COOKIE_SECURE === "true",
+    secure: shouldUseSecureCookie(request),
     path: "/",
     maxAge: 60 * 60 * 8,
   });
 }
 
-export function clearSessionCookie(response: NextResponse) {
+export function clearSessionCookie(response: NextResponse, request?: Request) {
   response.cookies.set(SESSION_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.AUTH_COOKIE_SECURE === "true",
+    secure: shouldUseSecureCookie(request),
     path: "/",
     maxAge: 0,
   });

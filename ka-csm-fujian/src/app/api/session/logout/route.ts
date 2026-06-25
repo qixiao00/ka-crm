@@ -4,8 +4,8 @@ import { clearSessionCookie } from "@/lib/auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(request: Request) {
   const response = NextResponse.json({ ok: true });
-  clearSessionCookie(response);
+  clearSessionCookie(response, request);
   return response;
 }
